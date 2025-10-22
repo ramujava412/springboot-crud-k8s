@@ -10,7 +10,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Clone your GitHub repository
-                git branch: 'main', credentialsId: 'github-access', url: 'https://github.com/yourusername/springboot-crud-k8s.git'
+                git branch: 'main', credentialsId: 'github-access', url: 'https://github.com/ramujava412/springboot-crud-k8s.git'
             }
         }
 
