@@ -57,6 +57,18 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.10.1</version>
+            <configuration>
+                <source>17</source> <!-- or 21 if applicable -->
+                <target>17</target>
+            </configuration>
+        </plugin>
+   
+
 		</plugins>
 		<finalName>springboot-crud-k8s</finalName>
 	</build>
