@@ -37,7 +37,7 @@ pipeline {
                     sh 'kubectl apply -f mysql-configMap.yaml'
                     sh 'kubectl apply -f mysql-secrets.yaml'
                     sh 'kubectl apply -f app-deployment.yaml'
-                    sh "kubectl set image deployment/app-deployment app=${DOCKER_IMAGE} --record"
+                    sh "kubectl set image deployment/springboot-crud-deployment app=${DOCKER_IMAGE} --record"
                 }
             }
         }
