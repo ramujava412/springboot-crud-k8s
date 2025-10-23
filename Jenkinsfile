@@ -1,8 +1,16 @@
 pipeline {
     agent any
    tools {
-        jdk 'JDK8'
+        jdk 'Open JDK 8'
     }
+
+    stage('Build') {
+            steps {
+                // Build your project and skip tests if DB issues persist
+                sh 'mvn clean package -DskipTests'
+            }
+    }
+    
     environment {
         DOCKER_IMAGE = "ramujava/springboot-crud-k8s:${env.BUILD_NUMBER}"
         DOCKERHUB_CREDENTIALS = credentials('docker')
@@ -16,12 +24,7 @@ pipeline {
             }
         }
 
-        stage('Build') {
-            steps {
-                // Build your project and skip tests if DB issues persist
-                sh 'mvn clean package -DskipTests'
-            }
-        }
+        
 
         stage('Build & Push Docker Image') {
             steps {
