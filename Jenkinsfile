@@ -1,6 +1,8 @@
 pipeline {
     agent any
-
+   tools {
+        jdk 'JDK8'
+    }
     environment {
         DOCKER_IMAGE = "ramujava/springboot-crud-k8s:${env.BUILD_NUMBER}"
         DOCKERHUB_CREDENTIALS = credentials('docker')
