@@ -1,19 +1,13 @@
 pipeline {
     agent any
-   tools {
-        jdk 'Open JDK 8'
+
+    tools {
+        jdk 'Open JDK 8' // Use the exact name from Global Tool Configuration
     }
 
-    stage('Build') {
-            steps {
-                // Build your project and skip tests if DB issues persist
-                sh 'mvn clean package -DskipTests'
-            }
-    }
-    
     environment {
         DOCKER_IMAGE = "ramujava/springboot-crud-k8s:${env.BUILD_NUMBER}"
-        DOCKERHUB_CREDENTIALS = credentials('docker')
+        DOCKERHUB_CREDENTIALS = credentials('docker') // Replace with your actual Docker credential ID
     }
 
     stages {
@@ -24,18 +18,21 @@ pipeline {
             }
         }
 
-        
+        stage('Build') {
+            steps {
+                // Build your project and skip tests if DB issues persist
+                sh 'mvn clean package -DskipTests'
+            }
+        }
 
         stage('Build & Push Docker Image') {
             steps {
                 script {
                     // Build Docker image
-                    docker.build("${DOCKER_IMAGE}")
-                }
-                script {
+                    def image = docker.build("${DOCKER_IMAGE}")
                     // Push Docker image to Docker Hub
-                    docker.withRegistry('https://index.docker.io/v1/', 'docker') {
-                        docker.image("${DOCKER_IMAGE}").push()
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS) {
+                        image.push()
                     }
                 }
             }
@@ -43,7 +40,6 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                // Apply all your YAMLs for DB and app deployments
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
                     sh 'kubectl apply -f db-deployment.yaml'
                     sh 'kubectl apply -f mysql-configMap.yaml'
