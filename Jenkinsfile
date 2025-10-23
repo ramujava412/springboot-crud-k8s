@@ -2,12 +2,11 @@ pipeline {
     agent any
 
     tools {
-        jdk 'Open JDK 8' // Use the exact name as shown in your Jenkins JDK tool configuration
+        jdk 'Open JDK 8'
     }
 
     environment {
         DOCKER_IMAGE = "ramujava/springboot-crud-k8s:${env.BUILD_NUMBER}"
-        DOCKERHUB_CREDENTIALS = credentials('docker') // DockerHub Credentials ID from your screenshot
     }
 
     stages {
@@ -16,24 +15,21 @@ pipeline {
                 git branch: 'main', credentialsId: 'github-access', url: 'https://github.com/ramujava412/springboot-crud-k8s.git'
             }
         }
-
         stage('Build') {
             steps {
                 sh 'mvn clean package -DskipTests'
             }
         }
-
         stage('Build & Push Docker Image') {
             steps {
                 script {
                     def image = docker.build(env.DOCKER_IMAGE)
-                    docker.withRegistry('https://index.docker.io/v1/', env.DOCKERHUB_CREDENTIALS) {
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker') {
                         image.push()
                     }
                 }
             }
         }
-
         stage('Deploy to Kubernetes') {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
@@ -46,7 +42,6 @@ pipeline {
             }
         }
     }
-
     post {
         always {
             cleanWs()
