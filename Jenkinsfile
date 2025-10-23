@@ -2,25 +2,23 @@ pipeline {
     agent any
 
     tools {
-        jdk 'Open JDK 8' // Use the exact name from Global Tool Configuration
+        jdk 'Open JDK 8' // Use the exact name as shown in your Jenkins JDK tool configuration
     }
 
     environment {
         DOCKER_IMAGE = "ramujava/springboot-crud-k8s:${env.BUILD_NUMBER}"
-        DOCKERHUB_CREDENTIALS = credentials('docker') // Replace with your actual Docker credential ID
+        DOCKERHUB_CREDENTIALS = credentials('docker') // DockerHub Credentials ID from your screenshot
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Clone your GitHub repository
                 git branch: 'main', credentialsId: 'github-access', url: 'https://github.com/ramujava412/springboot-crud-k8s.git'
             }
         }
 
         stage('Build') {
             steps {
-                // Build your project and skip tests if DB issues persist
                 sh 'mvn clean package -DskipTests'
             }
         }
@@ -28,10 +26,8 @@ pipeline {
         stage('Build & Push Docker Image') {
             steps {
                 script {
-                    // Build Docker image
-                    def image = docker.build("${DOCKER_IMAGE}")
-                    // Push Docker image to Docker Hub
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS) {
+                    def image = docker.build(env.DOCKER_IMAGE)
+                    docker.withRegistry('https://index.docker.io/v1/', env.DOCKERHUB_CREDENTIALS) {
                         image.push()
                     }
                 }
@@ -45,7 +41,6 @@ pipeline {
                     sh 'kubectl apply -f mysql-configMap.yaml'
                     sh 'kubectl apply -f mysql-secrets.yaml'
                     sh 'kubectl apply -f app-deployment.yaml'
-                    // Update app deployment image with latest build
                     sh "kubectl set image deployment/app-deployment app=${DOCKER_IMAGE} --record"
                 }
             }
@@ -54,7 +49,6 @@ pipeline {
 
     post {
         always {
-            // Clean workspace after pipeline run
             cleanWs()
         }
     }
