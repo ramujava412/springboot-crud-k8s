@@ -2,13 +2,11 @@ pipeline {
     agent any
 
     tools {
-        jdk 'Open JDK 8' // Your Jenkins configured JDK tool name
+        jdk 'Open JDK 8' // Your Jenkins JDK tool name
     }
 
     environment {
         DOCKER_IMAGE = "ramujava/springboot-crud-k8s:${env.BUILD_NUMBER}"
-        // Use your Docker credential ID exactly as configured in Jenkins
-        DOCKERHUB_CREDENTIALS = credentials('docker')
     }
 
     stages {
@@ -36,17 +34,17 @@ pipeline {
         }
 
         stage('Deploy to Kubernetes') {
-         steps {
-            withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
-                sh 'kubectl apply -f db-deployment.yaml'
-                sh 'kubectl apply -f mysql-configMap.yaml'
-                sh 'kubectl apply -f mysql-secrets.yaml'
-                sh 'kubectl apply -f app-deployment.yaml'
-                sh "kubectl set image deployment/springboot-crud-deployment springboot-crud-k8s=${DOCKER_IMAGE} --record"
+            steps {
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                    sh 'kubectl apply -f db-deployment.yaml'
+                    sh 'kubectl apply -f mysql-configMap.yaml'
+                    sh 'kubectl apply -f mysql-secrets.yaml'
+                    sh 'kubectl apply -f app-deployment.yaml'
+                    sh "kubectl set image deployment/springboot-crud-deployment springboot-crud-k8s=${DOCKER_IMAGE} --record"
+                }
             }
         }
     }
-
 
     post {
         always {
